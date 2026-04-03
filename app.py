@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 from dotenv import load_dotenv
 import anthropic
 import urllib.request
@@ -190,7 +190,10 @@ def get_gmail_link(to, subject, body):
 
 @app.route('/')
 def index():
-    return render_template('chat.html')
+    response = make_response(render_template('chat.html'))
+    response.headers['X-Frame-Options'] = 'ALLOWALL'
+    response.headers['Content-Security-Policy'] = "frame-ancestors *"
+    return response
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -231,6 +234,13 @@ Question: {user_message}"""
 
     reply = response.content[0].text
     return jsonify({'reply': reply})
+
+@app.after_request
+def add_headers(response):
+    response.headers['X-Frame-Options'] = 'ALLOWALL'
+    response.headers['Content-Security-Policy'] = "frame-ancestors *"
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -9,89 +9,11 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "app.py",
+      "headers": {
+        "X-Frame-Options": "ALLOWALL",
+        "Content-Security-Policy": "frame-ancestors *"
+      }
     }
   ]
 }
-```
-
-Save:
-```
-Ctrl + X → Y → Enter
-```
-
----
-
-**Step 2 — Create requirements.txt**
-
-Vercel needs to know which Python libraries to install:
-```
-nano requirements.txt
-```
-
-Type this:
-```
-flask
-anthropic
-python-dotenv
-```
-
-Save:
-```
-Ctrl + X → Y → Enter
-```
-
----
-
-**Step 3 — Create GitHub account**
-```
-github.com → Sign up
-```
-
-Use your demo Gmail. Username something like:
-```
-veena-hr-agent
-```
-
----
-
-**Step 4 — Install GitHub on your Mac**
-```
-brew install gh
-```
-
-If brew isn't installed first run:
-```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
----
-
-**Step 5 — Sign up for Vercel**
-```
-vercel.com → Sign up with GitHub
-```
-
----
-
-**The deployment flow after that:**
-```
-Your code → GitHub → Vercel reads it
-                   → gives you public URL
-                   → embed in Framer
-```
-
----
-
-**One important thing before we push to GitHub:**
-
-We need to make sure your API key is NOT in the code. Right now it's in your `.env` file which stays on your Mac. But we need to add a `.gitignore` file to make sure it never accidentally gets uploaded.
-```
-nano .gitignore
-```
-
-Type:
-```
-.env
-__pycache__
-*.pyc
