@@ -50,6 +50,8 @@ def read_nominations():
     return [row for row in reader]
 
 def build_summary(tracker, nominations):
+    from datetime import date
+    today_str = date.today().strftime("%d %B %Y")
     batches = {}
     vl_not_started = {}
     absent_employees = {}
@@ -134,7 +136,7 @@ def build_summary(tracker, nominations):
     not_responded = [h for h in all_hrbps if h not in hrbp_responses]
 
     summary = f"""
-TODAY: 2 April 2026
+TODAY: {today_str}
 
 BATCH STATUS:
 """
@@ -219,13 +221,21 @@ Use structured formatting with headers and bullet points.
 Flag urgent items clearly.
 
 
-If asked to draft emails, format EACH email exactly like this:
+If asked to draft emails, you MUST create ONE separate
+---EMAIL--- block for EACH individual person.
+Never combine multiple people into one email block.
+Format each individual email exactly like this:
+
 ---EMAIL---
-TO: [name]
+TO: [single person name only]
 SUBJECT: [subject line]
 BODY:
-[full email body here]
+[full email body for this one person only]
 ---END---
+
+Repeat this block once for every single person.
+If there are 12 people, create 12 separate blocks.
+Each block must have its own TO, SUBJECT and BODY.
 
 
 Question: {user_message}"""
