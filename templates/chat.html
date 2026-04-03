@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDP Programme Supervisor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  width: 100%;
+  max-width: 720px;
+  height: 90vh;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.header {
+  background: #1D9E75;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.header-info h1 {
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
+.header-info p {
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+}
+.live-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+}
+.live-badge span { color: white; font-size: 11px; }
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f8fafb;
+}
+.message {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.message.user { flex-direction: row-reverse; }
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+.avatar.agent { background: #1D9E75; font-size: 16px; }
+.avatar.user  { background: #085041; }
+.bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 4px 16px 16px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: white;
+  border: 1px solid #e8edf2;
+}
+.message.user .bubble {
+  background: #1D9E75;
+  color: white;
+  border-radius: 16px 4px 16px 16px;
+  border: none;
+}
+.bubble h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+  color: #0F6E56;
+}
+.bubble h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 10px 0 4px;
+  color: #333;
+}
+.bubble ul { padding-left: 16px; margin: 4px 0; }
+.bubble li { margin: 3px 0; font-size: 13px; }
+.bubble p { margin: 4px 0; }
+.bubble strong { font-weight: 600; }
+.bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.bubble th {
+  background: #f0f7f4;
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #0F6E56;
+  border-bottom: 1px solid #d4edda;
+}
+.bubble td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.gmail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #E1F5EE;
+  color: #0F6E56;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  margin: 6px 0;
+  border: 1px solid #9FE1CB;
+}
+.gmail-btn:hover { background: #9FE1CB; }
+.typing {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid #e8edf2;
+  border-radius: 4px 16px 16px 16px;
+  width: fit-content;
+}
+.typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1D9E75;
+  animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+.quick-actions {
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: white;
+  border-top: 1px solid #f0f0f0;
+}
+.quick-btn {
+  padding: 6px 12px;
+  border: 1px solid #1D9E75;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #1D9E75;
+  background: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.quick-btn:hover { background: #E1F5EE; }
+.input-area {
+  padding: 16px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: white;
+  border-top: 1px solid #e8edf2;
+}
+.input-area input {
+  flex: 1;
+  border: 1px solid #e8edf2;
+  border-radius: 24px;
+  padding: 10px 18px;
+  font-size: 14px;
+  outline: none;
+  background: #f8fafb;
+}
+.input-area input:focus {
+  border-color: #1D9E75;
+  background: white;
+}
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1D9E75;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.send-btn:hover { background: #0F6E56; }
+.send-btn svg { width: 16px; height: 16px; fill: white; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #d0d8e0;
+  border-radius: 4px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-avatar">🤖</div>
+    <div class="header-info">
+      <h1>LDP Programme Supervisor</h1>
+      <p>Powered by Claude AI · Reading live data</p>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <span>Live</span>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="message agent">
+      <div class="avatar agent">🤖</div>
+      <div class="bubble">
+        Hello! I have loaded your LDP programme data.<br><br>
+        You have <strong>4 active batches</strong> and
+        <strong>165 in-scope employees</strong>.<br><br>
+        How can I help you today?
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="sendQuick('What is the overall programme status?')">Programme status</button>
+    <button class="quick-btn" onclick="sendQuick('Who needs VL nudges?')">VL nudges needed</button>
+    <button class="quick-btn" onclick="sendQuick('Batch 04 nominations update?')">Batch 04 nominations</button>
+    <button class="quick-btn" onclick="sendQuick('Any special cases I should know about?')">Special cases</button>
+  </div>
+
+  <div class="input-area">
+    <input
+      type="text"
+      id="userInput"
+      placeholder="Ask about your LDP programme..."
+      onkeydown="if(event.key==='Enter') sendMessage()"
+    />
+    <button class="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+function addMessage(text, sender) {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message ' + sender;
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + sender;
+  avatar.textContent = sender === 'agent' ? '🤖' : 'VK';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (sender === 'agent') {
+    bubble.innerHTML = formatMessage(text);
+  } else {
+    bubble.textContent = text;
+  }
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function formatMessage(text) {
+  const emailRegex = /---EMAIL---([\s\S]+?)---END---/g;
+  let match;
+  let buttons = '';
+  let cleanText = text;
+
+  while ((match = emailRegex.exec(text)) !== null) {
+    const block = match[1];
+    const toMatch = block.match(/TO:\s*(.+)/i);
+    const subMatch = block.match(/SUBJECT:\s*(.+)/i);
+    const bodyMatch = block.match(/BODY:\s*([\s\S]+)/i);
+    if (toMatch && subMatch && bodyMatch) {
+      const to = toMatch[1].trim();
+      const subject = subMatch[1].trim();
+      const body = bodyMatch[1].trim();
+      const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+        + '&to=' + encodeURIComponent(to)
+        + '&su=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+      buttons += '<a href="' + gmailUrl + '" target="_blank" class="gmail-btn">'
+        + '📧 Open in Gmail — ' + to + '</a><br>';
+    }
+    cleanText = cleanText.replace(match[0], '');
+  }
+
+  cleanText = cleanText
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+
+  return cleanText + (buttons ? '<br>' + buttons : '');
+}
+
+function showTyping() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message agent';
+  div.id = 'typing';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar agent';
+  avatar.textContent = '🤖';
+  const typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  div.appendChild(avatar);
+  div.appendChild(typing);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  addMessage(message, 'user');
+  showTyping();
+  try {
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const data = await response.json();
+    removeTyping();
+    addMessage(data.reply, 'agent');
+  } catch (err) {
+    removeTyping();
+    addMessage('Sorry, something went wrong. Please try again.', 'agent');
+  }
+}
+
+function sendQuick(text) {
+  document.getElementById('userInput').value = text;
+  sendMessage();
+}
+</script>
+</body>
+</html>
