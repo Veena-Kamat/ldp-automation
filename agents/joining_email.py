@@ -64,6 +64,8 @@ The email should:
   modules after the workshop
 - Ask them to confirm attendance by replying
 - Tell them to reach out with any questions
+- Include this Google Calendar link so they can save the event:
+  https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop
 - Be warm and motivating — this is a big moment 
   for them career wise
 - Sign off as: LDP Programme Team
