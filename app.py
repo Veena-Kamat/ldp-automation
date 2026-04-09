@@ -372,13 +372,15 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message", "")
+    # Full conversation history from frontend [{role, content}, ...]
+    history      = request.json.get("history", [])
 
     tracker     = read_ldp_tracker()
     nominations = read_nominations()
     summary     = build_summary(tracker, nominations)
     actions, warnings = get_todays_actions(tracker, nominations)
 
-    actions_text = "\n".join(f"• {a}" for a in actions)
+    actions_text  = "\n".join(f"• {a}" for a in actions)
     warnings_text = "\n".join(f"⚠ {w}" for w in warnings) if warnings else ""
 
     context = summary
@@ -387,50 +389,58 @@ def chat():
     if warnings_text:
         context += f"\n\nWARNINGS:\n{warnings_text}"
 
-    messages = [{
-        "role": "user",
-        "content": f"""You are the LDP Programme Supervisor Agent with full visibility
+    # System prompt — separate from conversation messages
+    system_prompt = f"""You are the LDP Programme Supervisor Agent with full visibility
 of the Leadership Development Programme across all batches.
 
-Current programme data:
+LIVE PROGRAMME DATA (refreshed every message):
 {context}
 
-FORMATTING RULES — follow these exactly:
-- Never use markdown tables. Never use | characters for tables.
-- Never use --- as a divider or horizontal rule.
-- Never use #### or ### headers. Use ## for section headers at most.
-- Never use ** around text. Write bold concepts in plain text.
-- No blank lines between bullet points — keep lists tight.
-- For batch status, use this compact format on one line:
-  "Batch 01 — 9 completed · 14 in progress · 3 not started"
-- For employee lists, use compact lines with no blank gaps:
-  "Eric Bhat (Commercial, HRBP: Daniel Smith)"
-- Group all information for the same batch in one paragraph.
-- Maximum 1 blank line between sections.
+SMART MEMORY: You have full memory of this conversation. If the user has already
+acknowledged an issue, said it is fine, told you to proceed, or dismissed a concern —
+do not raise it again unless they explicitly ask. Respect the user's decisions and
+move forward. Never repeat the same urgent warning twice in a conversation. Be a smart
+assistant that listens, adapts and remembers what was already discussed.
 
-If asked to draft emails, create ONE separate block per person:
+STRICT FORMAT RULES — NEVER BREAK THESE:
+- NEVER use markdown tables (no | pipes |)
+- NEVER use --- dividers
+- NEVER use ### or #### headers
+- NEVER use ** bold markers
+- Use ## for section headers only (sparingly)
+- Batch summaries must be written as one line:
+  "Batch 01 — 9 completed, 14 in progress, 3 not started (30%)"
+- Employee lists must be compact with no blank lines between names:
+  "Eric Bhat (Commercial, HRBP: Daniel Smith), Aparna Srivastava (Finance, HRBP: Saif Sivasubramanian)"
+- Group all information for the same batch in one paragraph
+- Maximum ONE blank line between sections
+- No blank lines between bullet points
+- Write in tight paragraph and list format
+
+If asked to draft emails, create ONE separate block per person — never combine:
 ---EMAIL---
 TO: [recipient name or email]
 SUBJECT: [subject line]
 BODY:
-[full plain text email — no ** or markdown]
+[full plain text email body — absolutely no ** or markdown symbols]
 ---END---
 
-Repeat the block once per person. Never combine multiple people.
-If the user asks you to run an agent or take action, use the available tools.
+If the user asks to run an agent or take action, use the available tools."""
 
-Question: {user_message}"""
-    }]
+    # Build messages: conversation history + current user message
+    messages = list(history) + [{"role": "user", "content": user_message}]
 
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
+        system=system_prompt,
         tools=AGENT_TOOLS,
         messages=messages,
     )
 
-    # Handle tool calls (agent runs)
+    # Handle tool calls (agent runs) — kept internal, not in returned history
     agent_outputs = []
+    tool_messages = list(messages)  # local copy for tool round-trips
     while response.stop_reason == "tool_use":
         tool_results = []
         for block in response.content:
@@ -443,14 +453,15 @@ Question: {user_message}"""
                     "content":     output[:4000],
                 })
 
-        messages.append({"role": "assistant", "content": response.content})
-        messages.append({"role": "user",      "content": tool_results})
+        tool_messages.append({"role": "assistant", "content": response.content})
+        tool_messages.append({"role": "user",      "content": tool_results})
 
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=2048,
+            system=system_prompt,
             tools=AGENT_TOOLS,
-            messages=messages,
+            messages=tool_messages,
         )
 
     reply = ""

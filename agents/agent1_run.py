@@ -260,12 +260,12 @@ Write as a complete ready-to-send email with subject line."""
     elif email_type == "joining":
         prompt = f"""Draft a warm joining email to an LDP participant who has been selected for the programme.
 
-The email must open exactly with this line (fill in the name):
-"Congratulations {context['participant']}! You have been selected for the Leadership Development Programme."
+The email must open with exactly these sentences:
+"Congratulations {context['participant']}! You have been selected for the Leadership Development Programme 2026. This is a fantastic opportunity and a recognition of your potential and leadership capability."
 
 Then continue warmly with:
 - Programme details: {BATCH_DATE}, {WORKSHOP_LOCATION}, 9AM-5PM both days
-- Mention they will also have virtual learning modules after the workshop
+- Mention they will also complete virtual learning modules after the workshop
 - Include this calendar link so they can save the event: {CALENDAR_LINK}
 - Ask them to reply to confirm attendance by 14 April 2026
 - Sign off as: LDP Programme Team

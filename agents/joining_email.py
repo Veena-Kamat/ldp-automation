@@ -55,23 +55,19 @@ Details:
 - Time: {WORKSHOP_TIME} both days
 - Dress Code: {DRESS_CODE}
 
-The email should:
-- Open with congratulations — make them feel 
-  excited and valued
-- Explain what LDP is in one sentence
-- Share the programme details clearly
-- Mention they will also have virtual learning 
-  modules after the workshop
+The email must open with exactly these sentences:
+"Congratulations {participant_name}! You have been selected for the Leadership Development Programme 2026. This is a fantastic opportunity and a recognition of your potential and leadership capability."
+
+Then continue with:
+- Programme details: {BATCH_DATE}, {WORKSHOP_LOCATION}, {WORKSHOP_TIME} both days
+- Dress Code: {DRESS_CODE}
+- Mention they will also complete virtual learning modules after the workshop
+- Include this calendar link: https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop
 - Ask them to confirm attendance by replying
-- Tell them to reach out with any questions
-- Include this Google Calendar link so they can save the event:
-  https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop
-- Be warm and motivating — this is a big moment 
-  for them career wise
 - Sign off as: LDP Programme Team
 
-Write as a complete ready to send email
-with subject line."""
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""
             }
         ]
     )

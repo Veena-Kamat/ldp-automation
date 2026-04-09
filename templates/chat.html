@@ -370,11 +370,11 @@ function addMessage(text, sender, agentOutputs) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-// ── Format chat reply — parse ---EMAIL--- blocks + markdown ───
+// ── Format chat reply ─────────────────────────────────────────
 function formatMessage(text) {
-  // Step 1: Extract all ---EMAIL--- blocks (hide raw text, collect for buttons)
-  const emailRegex = /---EMAIL---([\s\S]+?)---END---/g;
+  // Extract all ---EMAIL--- blocks first (hide raw content entirely)
   const emails = [];
+  const emailRegex = /---EMAIL---([\s\S]+?)---END---/g;
   let m;
   while ((m = emailRegex.exec(text)) !== null) {
     const block = m[1];
@@ -382,82 +382,49 @@ function formatMessage(text) {
     const subM  = block.match(/SUBJECT:\s*(.+)/i);
     const bodyM = block.match(/BODY:\s*([\s\S]+)/i);
     if (toM && subM && bodyM) {
-      emails.push({
-        to:      toM[1].trim(),
-        subject: subM[1].trim(),
-        body:    bodyM[1].trim(),
-      });
+      emails.push({ to: toM[1].trim(), subject: subM[1].trim(), body: bodyM[1].trim() });
     }
   }
-  // Remove all email blocks completely from text
+  // Remove ALL email blocks from visible text
   text = text.replace(/---EMAIL---[\s\S]+?---END---/g, '').trim();
 
-  // Step 2: Process line by line
-  const lines = text.split('\n');
-  const outputLines = [];
-  let blankCount = 0;
-  let i = 0;
+  // Step 1 — Strip markdown table rows entirely (lines with | pipes |)
+  text = text.replace(/^\|.*\|$/gm, '');
+  text = text.replace(/^\|[-|: ]+\|$/gm, '');
 
-  while (i < lines.length) {
-    const raw = lines[i];
-    const trimmed = raw.trim();
+  // Step 2 — Strip --- dividers
+  text = text.replace(/^---+$/gm, '');
 
-    // Detect markdown table block (lines containing |)
-    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-      const tableLines = [];
-      while (i < lines.length && lines[i].trim().startsWith('|')) {
-        tableLines.push(lines[i]);
-        i++;
-      }
-      const tableHtml = formatTable(tableLines);
-      if (tableHtml) outputLines.push(tableHtml);
-      blankCount = 0;
-      continue;
-    }
+  // Step 3 — Convert **bold** to <b>
+  text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
-    // Strip horizontal rules (--- or ___ or ***)
-    if (/^[-_*]{3,}$/.test(trimmed)) { i++; continue; }
+  // Step 4 — Convert ## section headers to styled teal (before stripping other #)
+  text = text.replace(/^##\s+(.+)$/gm,
+    '<div style="color:#1D9E75;font-weight:600;margin:12px 0 4px">$1</div>');
 
-    // Blank line — cap at 1
-    if (trimmed === '') {
-      blankCount++;
-      if (blankCount <= 1) outputLines.push('');
-      i++; continue;
-    }
-    blankCount = 0;
+  // Step 5 — Strip ### #### and any remaining # markers
+  text = text.replace(/^#{1,6}\s*/gm, '');
 
-    let line = raw;
-
-    // #### and ### → bold span (not heading)
-    line = line.replace(/^#{4,}\s+(.+)$/, '<b>$1</b>');
-    line = line.replace(/^###\s+(.+)$/, '<b>$1</b>');
-    // ## → coloured section header
-    line = line.replace(/^##\s+(.+)$/, '<span style="font-weight:600;color:#0F6E56;display:block;margin-top:6px">$1</span>');
-    // # → same
-    line = line.replace(/^#\s+(.+)$/, '<span style="font-weight:600;color:#0F6E56;display:block;margin-top:6px">$1</span>');
-
-    // ** bold
-    line = line.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-
-    // Bullet list items
-    if (/^[-*•]\s+/.test(line)) {
-      line = '<li>' + line.replace(/^[-*•]\s+/, '') + '</li>';
-    }
-
-    outputLines.push(line);
-    i++;
-  }
-
-  // Step 3: Join lines, wrap consecutive <li> in <ul>
-  let html = outputLines.join('\n');
-  html = html.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, function(match) {
-    return '<ul style="margin:4px 0;padding-left:16px">' + match + '</ul>';
+  // Step 6 — Convert bullet list items, removing blank lines between them
+  // Group consecutive bullet lines into a tight <ul>
+  text = text.replace(/(^[-•*]\s+.+$\n?)+/gm, function(block) {
+    const items = block.trim().split('\n')
+      .map(function(l) { return l.trim(); })
+      .filter(function(l) { return l.length > 0; });
+    return '<ul style="margin:3px 0;padding-left:16px">'
+      + items.map(function(l) {
+          return '<li>' + l.replace(/^[-•*]\s+/, '') + '</li>';
+        }).join('')
+      + '</ul>\n';
   });
 
-  // Step 4: Convert line breaks
-  html = html.replace(/\n\n/g, '<br>').replace(/\n/g, '<br>');
+  // Step 7 — Convert newlines to <br>
+  text = text.replace(/\n/g, '<br>');
 
-  // Step 5: Build Gmail buttons section (hides all raw email text)
+  // Step 8 — Reduce 3+ consecutive <br> to max 2
+  text = text.replace(/(<br\s*\/?>\s*){3,}/g, '<br><br>');
+
+  // Build Gmail buttons — show summary line + buttons only (no raw email text)
   let emailHtml = '';
   if (emails.length > 0) {
     const label = emails.length === 1
@@ -465,45 +432,14 @@ function formatMessage(text) {
       : emails.length + ' emails ready — click to open each in Gmail:';
     emailHtml = '<div class="gmail-section"><div class="gmail-section-title">' + label + '</div>';
     emails.forEach(function(e) {
-      const shortSub = e.subject.length > 48 ? e.subject.substring(0, 48) + '…' : e.subject;
       emailHtml += '<a href="' + buildGmailUrl(e.to, e.subject, e.body)
-        + '" target="_blank" class="gmail-btn">📧 '
-        + escapeHtml(e.to) + ' — ' + escapeHtml(shortSub) + '</a>';
+        + '" target="_blank" class="gmail-btn">📧 Open in Gmail — '
+        + escapeHtml(e.to) + '</a>';
     });
     emailHtml += '</div>';
   }
 
-  return html + (emailHtml ? '<br>' + emailHtml : '');
-}
-
-// ── Convert markdown table rows to compact inline text ────────
-function formatTable(lines) {
-  // Parse header row
-  const headers = lines[0].split('|').map(function(h) { return h.trim(); }).filter(function(h) { return h !== ''; });
-  const rows = [];
-
-  for (var i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    // Skip separator rows (|---|---|)
-    if (/^[\s|:\-]+$/.test(line)) continue;
-    const cells = line.split('|').map(function(c) { return c.trim(); }).filter(function(c) { return c !== ''; });
-    if (cells.length === 0) continue;
-
-    // First cell is the row label
-    let rowText = '<b>' + escapeHtml(cells[0]) + '</b>';
-    const details = [];
-    for (var j = 1; j < cells.length; j++) {
-      const val = cells[j];
-      if (!val || val === '-' || val === '—' || val === 'N/A' || val === '') continue;
-      const header = headers[j] ? headers[j].toLowerCase() : '';
-      details.push(escapeHtml(val) + (header ? ' ' + escapeHtml(header) : ''));
-    }
-    if (details.length > 0) {
-      rowText += ' — ' + details.join(' · ');
-    }
-    rows.push(rowText);
-  }
-  return rows.join('<br>');
+  return text + (emailHtml ? '<br>' + emailHtml : '');
 }
 
 // ── Extract Gmail buttons from plain agent output text ────────
@@ -579,6 +515,9 @@ function showTyping() {
 }
 function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
 
+// ── Conversation history (maintained across messages) ─────────
+var conversationHistory = [];
+
 // ── Send chat message ─────────────────────────────────────────
 async function sendMessage() {
   const input   = document.getElementById('userInput');
@@ -588,14 +527,26 @@ async function sendMessage() {
   addMessage(message, 'user');
   showTyping();
   try {
-    const res  = await fetch('/chat', {
+    // Send full history (before this message) so Claude has context
+    const res = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({
+        message: message,
+        history: conversationHistory.slice()  // copy of history before this turn
+      })
     });
     const data = await res.json();
     removeTyping();
-    addMessage(data.reply, 'agent', data.agent_outputs || []);
+    const reply = data.reply || '';
+    // Update history with this turn (plain text only, no HTML)
+    conversationHistory.push({ role: 'user',      content: message });
+    conversationHistory.push({ role: 'assistant', content: reply });
+    // Keep history from growing too large (last 20 turns = 40 messages)
+    if (conversationHistory.length > 40) {
+      conversationHistory = conversationHistory.slice(-40);
+    }
+    addMessage(reply, 'agent', data.agent_outputs || []);
   } catch (err) {
     removeTyping();
     addMessage('Sorry, something went wrong. Please try again.', 'agent');
