@@ -244,6 +244,13 @@ def build_summary(tracker, nominations):
         if emp.get("Certificate Issued Date", "").strip() not in ("", "—"):
             b["certs_issued"] += 1
 
+    # Build name → function lookup from tracker for nominee enrichment
+    name_to_function = {
+        emp.get("Employee Name", "").strip(): emp.get("Function", "").strip()
+        for emp in tracker
+        if emp.get("Employee Name", "").strip()
+    }
+
     hrbp_responses = {}
     all_nominees = []
     special_cases = []
@@ -293,7 +300,11 @@ BATCH 04 NOMINATIONS:
   Deadline: 7 April 2026
 """
     for hrbp, data in hrbp_responses.items():
-        summary += f"  {hrbp}: {', '.join(data['nominees'])}\n"
+        nominees_with_fn = [
+            f"{n} ({name_to_function.get(n, 'Unknown')})"
+            for n in data["nominees"]
+        ]
+        summary += f"  {hrbp}: {', '.join(nominees_with_fn)}\n"
         if data["comments"]:
             summary += f"    Note: {data['comments']}\n"
 
