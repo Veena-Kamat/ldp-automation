@@ -118,4 +118,6 @@ def run_agent2_preworkshop():
     print(f"(Showing 3 of {len(participants)} — all drafted in real run)")
     print("="*60)
 
-run_agent2_preworkshop()
+
+if __name__ == "__main__":
+    run_agent2_preworkshop()
