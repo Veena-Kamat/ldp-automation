@@ -395,20 +395,29 @@ of the Leadership Development Programme across all batches.
 Current programme data:
 {context}
 
-Answer the HR Manager's question clearly and helpfully.
-Use structured formatting with headers and bullet points.
-Flag urgent items clearly.
+FORMATTING RULES — follow these exactly:
+- Never use markdown tables. Never use | characters for tables.
+- Never use --- as a divider or horizontal rule.
+- Never use #### or ### headers. Use ## for section headers at most.
+- Never use ** around text. Write bold concepts in plain text.
+- No blank lines between bullet points — keep lists tight.
+- For batch status, use this compact format on one line:
+  "Batch 01 — 9 completed · 14 in progress · 3 not started"
+- For employee lists, use compact lines with no blank gaps:
+  "Eric Bhat (Commercial, HRBP: Daniel Smith)"
+- Group all information for the same batch in one paragraph.
+- Maximum 1 blank line between sections.
 
-If asked to draft emails, create ONE separate ---EMAIL--- block per person:
+If asked to draft emails, create ONE separate block per person:
 ---EMAIL---
-TO: [single person name or email]
+TO: [recipient name or email]
 SUBJECT: [subject line]
 BODY:
-[full email body]
+[full plain text email — no ** or markdown]
 ---END---
 
-If the user asks you to run an agent or take action on the programme,
-use the available tools to do so.
+Repeat the block once per person. Never combine multiple people.
+If the user asks you to run an agent or take action, use the available tools.
 
 Question: {user_message}"""
     }]

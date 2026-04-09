@@ -288,7 +288,8 @@ The email should:
 - Be warm and celebratory but professional
 - Sign off as: LDP Programme Team
 
-Write as complete ready-to-send email with subject line."""}]
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""}]
     )
     return message.content[0].text
 
@@ -317,7 +318,8 @@ The email should:
 - {'Mention their manager is being kept informed' if is_second else 'Keep it short — 3-4 sentences max'}
 - Sign off as: LDP Programme Team
 
-Write as complete ready-to-send email with subject line."""}]
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""}]
     )
     return message.content[0].text
 
@@ -342,7 +344,8 @@ The email should:
 - Be warm and brief (3-4 sentences)
 - Sign off as: LDP Programme Team
 
-Write as complete ready-to-send email with subject line."""}]
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""}]
     )
     return message.content[0].text
 
@@ -367,7 +370,8 @@ The email should:
 - Be professional and brief
 - Sign off as: LDP Programme Team
 
-Write as complete ready-to-send email with subject line."""}]
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""}]
     )
     return message.content[0].text
 

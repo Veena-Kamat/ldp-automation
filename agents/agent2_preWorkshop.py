@@ -83,7 +83,8 @@ The email should:
 - Express excitement about seeing them tomorrow
 - Sign off as: LDP Programme Team
 
-Write as complete ready to send email with subject line."""
+Write in plain text only. Do not use ** for bold or any markdown formatting.
+Write as a complete ready-to-send email with subject line."""
         }]
     )
     return message.content[0].text

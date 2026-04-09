@@ -225,13 +225,17 @@ def update_tracker(nominations_data):
 
 # ── TOOL 6: Draft emails via Claude ──────────────────────────
 def draft_email(email_type, context):
+    PLAIN_TEXT_NOTE = "IMPORTANT: Write in plain text only. Do not use ** for bold, no markdown formatting, no bullet points with dashes. Use plain paragraphs."
+
     if email_type == "nomination":
         prompt = f"""Draft a professional nomination request email to an HRBP for LDP.
 HRBP: {context['hrbp_name']}
 Batch dates: {BATCH_DATE}
 Nomination deadline: {NOMINATION_DEADLINE}
 Eligible employees: {context['employees']}
-Sign off as LDP Programme Team. Write as a complete ready-to-send email with subject line."""
+Sign off as: LDP Programme Team
+{PLAIN_TEXT_NOTE}
+Write as a complete ready-to-send email with subject line."""
 
     elif email_type == "nomination_with_nonattendees":
         prompt = f"""Draft a nomination request email to an HRBP for LDP.
@@ -239,44 +243,53 @@ HRBP: {context['hrbp_name']}
 Batch dates: {BATCH_DATE}
 Nomination deadline: {NOMINATION_DEADLINE}
 Eligible TBD employees: {context['employees']}
-
-Also mention that the following employees from a previous batch were absent and should be considered for re-scheduling:
-Previous non-attendees under this HRBP: {context.get('non_attendees', 'None')}
-
-Sign off as LDP Programme Team. Write as a complete ready-to-send email with subject line."""
+Previous non-attendees to reschedule: {context.get('non_attendees', 'None')}
+Sign off as: LDP Programme Team
+{PLAIN_TEXT_NOTE}
+Write as a complete ready-to-send email with subject line."""
 
     elif email_type == "confirmation":
         prompt = f"""Draft a nomination confirmation email to an HRBP.
 HRBP: {context['hrbp_name']}
 Nominees confirmed: {context['nominees']}
 Batch dates: {BATCH_DATE}
-Sign off as LDP Programme Team. Write as a complete ready-to-send email with subject line."""
+Sign off as: LDP Programme Team
+{PLAIN_TEXT_NOTE}
+Write as a complete ready-to-send email with subject line."""
 
     elif email_type == "joining":
-        prompt = f"""Draft a warm joining email to an LDP participant.
-Name: {context['participant']}
-Batch dates: {BATCH_DATE}
-Location: {WORKSHOP_LOCATION}
-Time: 9AM-5PM both days
-Calendar link (include this so they can save the event): {CALENDAR_LINK}
-Ask them to reply to confirm attendance by 14 April 2026.
-Sign off as LDP Programme Team. Write as a complete ready-to-send email with subject line."""
+        prompt = f"""Draft a warm joining email to an LDP participant who has been selected for the programme.
+
+The email must open exactly with this line (fill in the name):
+"Congratulations {context['participant']}! You have been selected for the Leadership Development Programme."
+
+Then continue warmly with:
+- Programme details: {BATCH_DATE}, {WORKSHOP_LOCATION}, 9AM-5PM both days
+- Mention they will also have virtual learning modules after the workshop
+- Include this calendar link so they can save the event: {CALENDAR_LINK}
+- Ask them to reply to confirm attendance by 14 April 2026
+- Sign off as: LDP Programme Team
+
+{PLAIN_TEXT_NOTE}
+Write as a complete ready-to-send email with subject line."""
 
     elif email_type == "day7_reminder":
         prompt = f"""Draft a polite but firm reminder email to an HRBP who has not responded to the LDP nomination request.
 HRBP: {context['hrbp_name']}
 Nomination deadline: {NOMINATION_DEADLINE}
 Batch dates: {BATCH_DATE}
-They were asked to nominate eligible employees from their team for LDP.
 Keep it brief — 3-4 sentences. Remind them the deadline is approaching.
-Sign off as LDP Programme Team. Write as a complete ready-to-send email with subject line."""
+Sign off as: LDP Programme Team
+{PLAIN_TEXT_NOTE}
+Write as a complete ready-to-send email with subject line."""
 
     elif email_type == "special_case":
         prompt = f"""Draft a brief internal note to HR about a special case flagged by an HRBP.
 HRBP: {context['hrbp']}
 Comment: {context['comment']}
 Suggest appropriate action (defer to next batch, check with manager, etc).
-Sign off as LDP Programme Team."""
+Sign off as: LDP Programme Team
+{PLAIN_TEXT_NOTE}"""
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
