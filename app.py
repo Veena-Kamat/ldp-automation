@@ -5,7 +5,10 @@ import urllib.request
 import csv
 import io
 import os
+import json
 from datetime import date
+import gspread
+from google.oauth2.service_account import Credentials
 
 load_dotenv()
 
@@ -15,6 +18,53 @@ client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 LDP_TRACKER_ID   = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
 NOMINATIONS_ID   = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
 EMPLOYEE_BASE_ID = "1pT6HJ2Wx0qrUYssUPYx9DcrRTSEyhqex4PsTdriT3Gk"
+VL_SHEET_ID      = "1QZSpDzXmk0MvYWxr5yfK7HyPxPIgkgDgrKxOCyF4GuQ"
+CREDENTIALS_FILE = "/Users/veenakamat/ldp-agent/google_credentials.json"
+GSPREAD_SCOPES   = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+
+def connect_gspread():
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if creds_json:
+        info = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(info, scopes=GSPREAD_SCOPES)
+    else:
+        creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=GSPREAD_SCOPES)
+    return gspread.authorize(creds)
+
+def read_vl_data():
+    """Return {emp_id: {status, pct, score}} for all batches in the VL report."""
+    gc = connect_gspread()
+    wb = gc.open_by_key(VL_SHEET_ID)
+    lookup = {}
+    for ws in wb.worksheets():
+        if "Batch" not in ws.title:
+            continue
+        rows = ws.get_all_values()
+        # Find header row — look for a row whose first cell is "Emp ID"
+        header_idx = next(
+            (i for i, r in enumerate(rows[:5]) if r and r[0].strip() == "Emp ID"),
+            2
+        )
+        if header_idx >= len(rows):
+            continue
+        headers = rows[header_idx]
+        col = {h.strip(): i for i, h in enumerate(headers)}
+        for row in rows[header_idx + 1:]:
+            emp_id = row[col["Emp ID"]].strip() if "Emp ID" in col and len(row) > col["Emp ID"] else ""
+            if not emp_id:
+                continue
+            def get(key):
+                idx = col.get(key, -1)
+                return row[idx].strip() if idx >= 0 and len(row) > idx else ""
+            lookup[emp_id] = {
+                "status": get("Overall Status"),
+                "pct":    get("Completion %"),
+                "score":  get("Avg Score"),
+            }
+    return lookup
 
 SECTION_LABELS = [
     "IDENTITY & SCOPE ",
@@ -84,7 +134,7 @@ def read_nominations():
     reader = csv.DictReader(io.StringIO(content))
     return [row for row in reader]
 
-def build_programme_data(tracker, nominations, email_lookup=None):
+def build_programme_data(tracker, nominations, email_lookup=None, vl_lookup=None):
     today = date.today()
     today_str = today.strftime("%d %B %Y")
 
@@ -285,6 +335,21 @@ SPECIAL CASES:
 {chr(10).join(f"- {sc['hrbp']}: {sc['comment']}" for sc in special_cases) if special_cases else 'None'}
 """
 
+    if vl_lookup:
+        lines = ["VL PROGRESS (live from VL report — use for nudges and completion queries):"]
+        lines.append("Emp ID | Name | Batch | VL Status | Completion % | Score")
+        for emp in tracker:
+            emp_id = emp.get("Emp ID", "").strip()
+            batch  = emp.get("Batch", "").strip()
+            if not emp_id or not batch.startswith("Batch-0") or emp_id not in vl_lookup:
+                continue
+            vl = vl_lookup[emp_id]
+            lines.append(
+                f"{emp_id} | {emp.get('Employee Name','').strip()} | {batch} | "
+                f"{vl['status']} | {vl['pct']} | {vl['score']}"
+            )
+        text_summary += "\n" + "\n".join(lines) + "\n"
+
     if email_lookup:
         lines = ["EMPLOYEE EMAIL DIRECTORY (LDP participants — use exact addresses in email TO: fields):"]
         lines.append("Name | Email | Manager | Manager Email | HRBP | HRBP Email")
@@ -369,10 +434,11 @@ def index():
 @app.route("/programme_data")
 def programme_data():
     try:
-        tracker = read_tracker()
-        nominations = read_nominations()
+        tracker      = read_tracker()
+        nominations  = read_nominations()
         email_lookup = build_email_lookup(read_employee_base())
-        data, _ = build_programme_data(tracker, nominations, email_lookup)
+        vl_lookup    = read_vl_data()
+        data, _ = build_programme_data(tracker, nominations, email_lookup, vl_lookup)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -383,12 +449,13 @@ def chat():
     try:
         body = request.json
         user_message = body.get("message", "")
-        history = body.get("history", [])
+        history      = body.get("history", [])
 
-        tracker     = read_tracker()
-        nominations = read_nominations()
+        tracker      = read_tracker()
+        nominations  = read_nominations()
         email_lookup = build_email_lookup(read_employee_base())
-        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup)
+        vl_lookup    = read_vl_data()
+        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup, vl_lookup)
 
         reply = ask_claude(user_message, history, text_summary)
 
@@ -403,10 +470,11 @@ def chat():
 @app.route("/todays_actions")
 def todays_actions():
     try:
-        tracker     = read_tracker()
-        nominations = read_nominations()
+        tracker      = read_tracker()
+        nominations  = read_nominations()
         email_lookup = build_email_lookup(read_employee_base())
-        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup)
+        vl_lookup    = read_vl_data()
+        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup, vl_lookup)
 
         reply = ask_claude(
             "What are today's most urgent priority actions? Lead with sending joining emails to Batch 04 participants. Do not mention nominations. Be specific with names and numbers. Keep it brief.",
