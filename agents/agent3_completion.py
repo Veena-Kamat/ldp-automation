@@ -13,8 +13,9 @@ load_dotenv()
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-LDP_TRACKER_ID   = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
-VL_FOLDER_ID     = "1aLfL_5OkVpMAe4QZnCFr02h01PKqIC12"
+LDP_TRACKER_ID      = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
+VL_FOLDER_ID        = "1aLfL_5OkVpMAe4QZnCFr02h01PKqIC12"
+FALLBACK_VL_SHEET_ID = "1QZSpDzXmk0MvYWxr5yfK7HyPxPIgkgDgrKxOCyF4GuQ"
 CREDENTIALS_FILE = "/Users/veenakamat/ldp-agent/google_credentials.json"
 TODAY            = date.today().strftime("%d-%b-%Y")
 TODAY_DATE       = date.today()
@@ -50,13 +51,13 @@ def connect():
     return gspread.authorize(creds), creds
 
 # ── TOOL 1: Find latest VL report via Drive API ───────────────
-def get_latest_vl_report(fallback_sheet_id=None):
+def get_latest_vl_report(fallback_sheet_id=FALLBACK_VL_SHEET_ID):
     """Find latest VL report in folder. Falls back to manual ID if Drive API disabled."""
     try:
         gc, creds = connect()
         drive_service = build("drive", "v3", credentials=creds)
         results = drive_service.files().list(
-            q=f"'{VL_FOLDER_ID}' in parents and name contains 'VL_Report' and trashed=false",
+            q=f"'{VL_FOLDER_ID}' in parents and (name contains 'VL_Report' or name contains 'VL_report') and trashed=false",
             orderBy="modifiedTime desc",
             pageSize=1,
             fields="files(id, name, modifiedTime)"
