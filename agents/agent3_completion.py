@@ -487,6 +487,7 @@ def run_agent3(vl_sheet_id=None):
     if not vl_sheet_id:
         print("No VL report found. Exiting.")
         return
+    print(f"Reading VL from: {vl_sheet_id} ({vl_filename})")
 
     # Step 2: Read VL data
     print("\n[Step 2] Reading VL report...")
