@@ -394,12 +394,54 @@ function renderDashboard(pd, reply) {
   addCard(html);
 }
 
+function isBatch4EmailQuery(msg) {
+  const t = msg.toLowerCase();
+  const hasBatch4 = t.includes('batch 4') || t.includes('batch04') || t.includes('batch-04') || t.includes('batch 04');
+  const hasEmail  = t.includes('email') || t.includes('joining') || t.includes('invite') || t.includes('draft');
+  return hasBatch4 && hasEmail;
+}
+
+function renderBatch4Emails(emails) {
+  let html = '<div style="font-size:13px;color:#1a1a1a;margin-bottom:14px;">Here are the emails for Batch 4 participants</div>';
+  html += '<div class="email-pills">';
+  emails.forEach(e => {
+    const url = 'https://mail.google.com/mail/?view=cm&fs=1'
+      + '&to='   + encodeURIComponent(e.to)
+      + '&su='   + encodeURIComponent(e.subject)
+      + '&body=' + encodeURIComponent(e.body);
+    html += `<a href="${url}" target="_blank" class="email-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>${esc(e.name)}</a>`;
+  });
+  html += '</div>';
+  addCard(html);
+}
+
 async function sendMessage(){
   const input = document.getElementById('userInput');
   const msg = input.value.trim();
   if(!msg) return;
   input.value = '';
   addUserMsg(msg);
+
+  if(isBatch4EmailQuery(msg)) {
+    showTyping();
+    try {
+      const res  = await fetch('/batch4_emails');
+      const data = await res.json();
+      removeTyping();
+      history.push({role:'user', content: msg});
+      history.push({role:'assistant', content: 'Here are the emails for Batch 4 participants'});
+      renderBatch4Emails(data.emails || []);
+    } catch(e) {
+      removeTyping();
+      addCard('Sorry, could not load Batch 4 emails. Please try again.');
+    }
+    return;
+  }
+
   history.push({role:'user', content: msg});
   showTyping();
   try{

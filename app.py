@@ -431,6 +431,47 @@ def index():
     return response
 
 
+@app.route("/batch4_emails")
+def batch4_emails():
+    try:
+        tracker      = read_tracker()
+        email_lookup = build_email_lookup(read_employee_base())
+
+        emails = []
+        for emp in tracker:
+            if emp.get("Batch", "").strip() != "Batch-04-2026":
+                continue
+            name     = emp.get("Employee Name", "").strip()
+            to_email = email_lookup.get(name, {}).get("email", "")
+
+            subject = "You've Been Selected for the Leadership Development Programme 2026"
+            body = (
+                f"Congratulations {name}!\n\n"
+                "You have been selected for the Leadership Development Programme 2026. "
+                "This is a fantastic opportunity and a recognition of your potential and leadership capability.\n\n"
+                "Here are your programme details:\n\n"
+                "Workshop Dates: 28-29 April 2026\n"
+                "Location: Main Training Centre, Dubai\n"
+                "Time: 9:00 AM - 5:00 PM (both days)\n"
+                "Dress Code: Business Casual\n\n"
+                "Following the workshop, you will also complete a series of virtual learning modules "
+                "to reinforce and apply your learning.\n\n"
+                "Add the dates to your calendar: https://www.google.com/calendar/render"
+                "?action=TEMPLATE&text=LDP+Batch+04+Workshop"
+                "&dates=20260428T090000/20260429T170000"
+                "&location=Main+Training+Centre+Dubai"
+                "&details=Leadership+Development+Programme+Workshop\n\n"
+                "Please confirm your attendance by replying to this email.\n\n"
+                "We look forward to seeing you there!\n\n"
+                "Warm regards,\nLDP Programme Team"
+            )
+            emails.append({"name": name, "to": to_email, "subject": subject, "body": body})
+
+        return jsonify({"emails": emails})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/programme_data")
 def programme_data():
     try:
