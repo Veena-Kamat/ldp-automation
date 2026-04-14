@@ -12,8 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-LDP_TRACKER_ID = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
-NOMINATIONS_ID = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
+LDP_TRACKER_ID   = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
+NOMINATIONS_ID   = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
+EMPLOYEE_BASE_ID = "1pT6HJ2Wx0qrUYssUPYx9DcrRTSEyhqex4PsTdriT3Gk"
 
 SECTION_LABELS = [
     "IDENTITY & SCOPE ",
@@ -43,6 +44,39 @@ def read_tracker():
             data.append(dict(zip(headers, row)))
     return data
 
+def read_employee_base():
+    url = f"https://docs.google.com/spreadsheets/d/{EMPLOYEE_BASE_ID}/gviz/tq?tqx=out:csv"
+    response = urllib.request.urlopen(url)
+    content = response.read().decode("utf-8")
+    reader = csv.DictReader(io.StringIO(content))
+    return [row for row in reader]
+
+def build_email_lookup(base_data):
+    # First pass: name → email for the full population (to resolve managers/HRBPs)
+    name_to_email = {}
+    for row in base_data:
+        name  = row.get("Employee Name", "").strip()
+        email = row.get("Work Email", "").strip()
+        if name and email:
+            name_to_email[name] = email
+
+    # Second pass: build full contact record per employee
+    lookup = {}
+    for row in base_data:
+        name = row.get("Employee Name", "").strip()
+        if not name:
+            continue
+        manager_name = row.get("Manager Name", "").strip()
+        hrbp_name    = row.get("HRBP Name", "").strip()
+        lookup[name] = {
+            "email":         row.get("Work Email", "").strip(),
+            "manager_name":  manager_name,
+            "manager_email": name_to_email.get(manager_name, ""),
+            "hrbp_name":     hrbp_name,
+            "hrbp_email":    name_to_email.get(hrbp_name, ""),
+        }
+    return lookup
+
 def read_nominations():
     url = f"https://docs.google.com/spreadsheets/d/{NOMINATIONS_ID}/gviz/tq?tqx=out:csv&gid=1000019961"
     response = urllib.request.urlopen(url)
@@ -50,7 +84,7 @@ def read_nominations():
     reader = csv.DictReader(io.StringIO(content))
     return [row for row in reader]
 
-def build_programme_data(tracker, nominations):
+def build_programme_data(tracker, nominations, email_lookup=None):
     today = date.today()
     today_str = today.strftime("%d %B %Y")
 
@@ -251,6 +285,19 @@ SPECIAL CASES:
 {chr(10).join(f"- {sc['hrbp']}: {sc['comment']}" for sc in special_cases) if special_cases else 'None'}
 """
 
+    if email_lookup:
+        lines = ["EMPLOYEE EMAIL DIRECTORY (LDP participants — use exact addresses in email TO: fields):"]
+        lines.append("Name | Email | Manager | Manager Email | HRBP | HRBP Email")
+        for emp in tracker:
+            name = emp.get("Employee Name", "").strip()
+            if not name or name not in email_lookup:
+                continue
+            c = email_lookup[name]
+            lines.append(
+                f"{name} | {c['email']} | {c['manager_name']} | {c['manager_email']} | {c['hrbp_name']} | {c['hrbp_email']}"
+            )
+        text_summary += "\n" + "\n".join(lines) + "\n"
+
     return programme_data, text_summary
 
 
@@ -283,11 +330,14 @@ RESPONSE RULES — FOLLOW EXACTLY:
 
 For emails use this exact format:
 ---EMAIL---
-TO: [name]
+TO: [actual email address from the directory — never use a name here]
 SUBJECT: [subject]
 BODY:
 [email body — plain text only, no markdown]
----END---"""
+---END---
+
+When drafting emails, always look up the recipient's email address in the EMPLOYEE EMAIL DIRECTORY above.
+For manager CC or HRBP CC, use their email addresses from the directory too."""
 
     messages = []
     for msg in history[:-1]:
@@ -321,7 +371,8 @@ def programme_data():
     try:
         tracker = read_tracker()
         nominations = read_nominations()
-        data, _ = build_programme_data(tracker, nominations)
+        email_lookup = build_email_lookup(read_employee_base())
+        data, _ = build_programme_data(tracker, nominations, email_lookup)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -334,9 +385,10 @@ def chat():
         user_message = body.get("message", "")
         history = body.get("history", [])
 
-        tracker = read_tracker()
+        tracker     = read_tracker()
         nominations = read_nominations()
-        programme_data, text_summary = build_programme_data(tracker, nominations)
+        email_lookup = build_email_lookup(read_employee_base())
+        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup)
 
         reply = ask_claude(user_message, history, text_summary)
 
@@ -351,9 +403,10 @@ def chat():
 @app.route("/todays_actions")
 def todays_actions():
     try:
-        tracker = read_tracker()
+        tracker     = read_tracker()
         nominations = read_nominations()
-        programme_data, text_summary = build_programme_data(tracker, nominations)
+        email_lookup = build_email_lookup(read_employee_base())
+        programme_data, text_summary = build_programme_data(tracker, nominations, email_lookup)
 
         reply = ask_claude(
             "What are today's most urgent priority actions? Lead with sending joining emails to Batch 04 participants. Do not mention nominations. Be specific with names and numbers. Keep it brief.",
