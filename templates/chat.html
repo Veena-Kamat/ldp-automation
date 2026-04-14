@@ -129,6 +129,22 @@ nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:fl
 <script>
 const history = [];
 
+(async function loadTodaysActions(){
+  showTyping();
+  try {
+    const res = await fetch('/todays_actions');
+    const data = await res.json();
+    removeTyping();
+    if(data.programme_data) {
+      renderDashboard(data.programme_data, data.actions);
+    } else {
+      addCard(formatMessage(data.actions || 'No actions today.'));
+    }
+  } catch(e) {
+    removeTyping();
+  }
+})();
+
 document.getElementById('dateSep').textContent =
   new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
@@ -175,7 +191,7 @@ function removeTyping(){
 function formatMessage(raw){
   let text = raw;
 
-  // Extract email blocks
+  // ── 1. Extract email blocks ──────────────────────────────────
   let emailButtons = [];
   const emailRx = /---EMAIL---([\s\S]+?)---END---/g;
   let em;
@@ -197,7 +213,64 @@ function formatMessage(raw){
     text = text.replace(em[0], '');
   }
 
-  // Clean markdown
+  // ── 2. Extract STATS: line → metric cards ───────────────────
+  let statsHtml = '';
+  const statsMatch = text.match(/^STATS:\s*(.+)$/m);
+  if(statsMatch){
+    const parts = statsMatch[1].split('|').map(s => s.trim());
+    // Extract leading number only (guard against "4 active" style outputs)
+    const num = s => { const m = s.match(/^\d+/); return m ? m[0] : (s||'—'); };
+    const cards = [
+      {label:'Batches active', val: num(parts[0]), numCls:'',      boxCls:''},
+      {label:'In pipeline',    val: num(parts[1]), numCls:'',      boxCls:''},
+      {label:'Completed',      val: num(parts[2]), numCls:'green', boxCls:''},
+      {label:'Action needed',  val: num(parts[3]), numCls:'amber', boxCls:'amber'},
+    ];
+    statsHtml = '<div class="stats-grid">'
+      + cards.map(c =>
+          `<div class="stat-box${c.boxCls?' '+c.boxCls:''}">
+            <div class="stat-label">${c.label}</div>
+            <div class="stat-num${c.numCls?' '+c.numCls:''}">${esc(c.val)}</div>
+          </div>`
+        ).join('')
+      + '</div>';
+    text = text.replace(statsMatch[0], '\x00STATS\x00');
+  }
+
+  // ── 3. Extract BATCH: lines → status rows ───────────────────
+  let batchHtml = '';
+  const batchLineRx = /^BATCH:\s*.+$/gm;
+  const batchLines = text.match(batchLineRx) || [];
+  if(batchLines.length > 0){
+    const pillMap = {
+      green: {cls:'pill-green', label:'Complete'},
+      amber: {cls:'pill-amber', label:'In Progress'},
+      grey:  {cls:'pill-grey',  label:'Upcoming'},
+      red:   {cls:'pill-red',   label:'At Risk'},
+    };
+    const rows = batchLines.map(line => {
+      const parts = line.replace(/^BATCH:\s*/,'').split('|').map(s => s.trim());
+      const name  = parts[0] || '';
+      const dt    = parts[1] || '';
+      const color = (parts[2] || 'grey').toLowerCase();
+      const desc  = parts[3] || '';
+      const pill  = pillMap[color] || pillMap.grey;
+      return `<div class="batch-row">
+        <div class="batch-left">
+          <span class="batch-name">${esc(name)}</span>
+          <span class="batch-date">${esc(dt)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          <span style="font-size:12px;color:#666;">${esc(desc)}</span>
+          <span class="status-pill ${pill.cls}">${pill.label}</span>
+        </div>
+      </div>`;
+    }).join('');
+    batchHtml = '<div class="batch-list">' + rows + '</div>';
+    text = text.replace(batchLineRx, '').replace(/\x00STATS\x00/, '\x00STATS\x00');
+  }
+
+  // ── 4. Clean markdown ────────────────────────────────────────
   text = text.replace(/^\|.*\|$/gm,'');
   text = text.replace(/^\|[-|:\s]+\|$/gm,'');
   text = text.replace(/^-{3,}$/gm,'');
@@ -218,12 +291,18 @@ function formatMessage(raw){
   text = text.replace(/^\d+\.\s+(.+)$/gm,
     '<div class="bullet-item"><div class="bullet-dot"></div><div>$1</div></div>');
 
-  // Paragraphs
+  // ── 5. Paragraphs ────────────────────────────────────────────
   const lines = text.split('\n');
   let html = '';
   let prevBlank = false;
   for(let line of lines){
     const trimmed = line.trim();
+    if(trimmed === '\x00STATS\x00'){
+      html += statsHtml;
+      if(batchHtml) html += batchHtml;
+      prevBlank = false;
+      continue;
+    }
     if(!trimmed){
       if(!prevBlank) html += '<br>';
       prevBlank = true;
@@ -237,11 +316,18 @@ function formatMessage(raw){
     }
   }
 
+  // If STATS/BATCH were never placed (e.g. no surrounding text), prepend them
+  if(statsHtml && !html.includes(statsHtml)){
+    html = statsHtml + (batchHtml || '') + html;
+  } else if(batchHtml && !html.includes(batchHtml)){
+    html = batchHtml + html;
+  }
+
   // Clean up excess breaks
   html = html.replace(/(<br>){3,}/g,'<br><br>');
   html = html.replace(/^<br>/,'');
 
-  // Email section
+  // ── 6. Email section ─────────────────────────────────────────
   if(emailButtons.length > 0){
     const visible = emailButtons.slice(0,4);
     const extra = emailButtons.length - 4;
@@ -262,6 +348,47 @@ function formatMessage(raw){
   return html;
 }
 
+function renderDashboard(pd, reply) {
+  let html = '';
+
+  if(pd.batch_status) {
+    const stats = [
+      {label:'Batches active', val: pd.batch_status.length, color:''},
+      {label:'In pipeline', val: pd.total_employees, color:''},
+      {label:'Certified', val: pd.total_certs, color:'green'},
+      {label:'Action needed', val: pd.action_needed, color:'amber'},
+    ];
+    html += '<div class="stats-grid">';
+    stats.forEach(s => {
+      html += `<div class="stat-box${s.color?' '+s.color:''}">
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-num${s.color?' '+s.color:''}">${s.val}</div>
+      </div>`;
+    });
+    html += '</div>';
+
+    html += '<div class="batch-list">';
+    pd.batch_status.forEach(b => {
+      html += `<div class="batch-row">
+        <div class="batch-left">
+          <span class="batch-name">${b.name}</span>
+          <span class="batch-date">${b.date}</span>
+        </div>
+        <span class="status-pill pill-${b.color}">${b.desc}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if(reply) {
+    html += '<div style="margin-top:14px;border-top:0.5px solid #f0f0f0;padding-top:14px;">';
+    html += formatMessage(reply);
+    html += '</div>';
+  }
+
+  addCard(html);
+}
+
 async function sendMessage(){
   const input = document.getElementById('userInput');
   const msg = input.value.trim();
@@ -280,7 +407,11 @@ async function sendMessage(){
     removeTyping();
     const reply = data.reply || 'Sorry, something went wrong.';
     history.push({role:'assistant', content: reply});
-    addCard(formatMessage(reply));
+    if(data.programme_data) {
+      renderDashboard(data.programme_data, reply);
+    } else {
+      addCard(formatMessage(reply));
+    }
   } catch(e){
     removeTyping();
     addCard('Sorry, something went wrong. Please try again.');
