@@ -183,7 +183,7 @@ def update_vl_in_tracker(vl_data, tracker_data):
 
         d1 = row[col_idx.get("Day 1 Attendance", -1)].strip() if col_idx.get("Day 1 Attendance", -1) >= 0 else ""
         d2 = row[col_idx.get("Day 2 Attendance", -1)].strip() if col_idx.get("Day 2 Attendance", -1) >= 0 else ""
-        attended_both = bool(d1.strip()) and bool(d2.strip())
+        attended_both = (d1 == "Attended" and d2 == "Attended")
 
         train_complete = "Yes" if (attended_both and vl["status"] == "Completed") else "No"
         cert_eligible  = "Yes" if train_complete == "Yes" else "No"
