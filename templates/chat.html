@@ -3,70 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LDP Supervisor</title>
+<title>Learning Program Manager Agent</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:#f5f5f7;height:100vh;display:flex;flex-direction:column;}
-nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;position:sticky;top:0;z-index:100;}
-.nav-left{display:flex;align-items:center;gap:10px;}
-.nav-icon{width:28px;height:28px;border-radius:8px;background:#1D9E75;display:flex;align-items:center;justify-content:center;}
+
+nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:flex;align-items:center;height:52px;flex-shrink:0;}
+.nav-icon{width:28px;height:28px;border-radius:8px;background:#1D9E75;display:flex;align-items:center;justify-content:center;margin-right:10px;}
 .nav-icon svg{width:14px;height:14px;}
-.nav-title{font-size:14px;font-weight:500;color:#1a1a1a;letter-spacing:-0.01em;}
+.nav-title{font-size:14px;font-weight:500;color:#1a1a1a;letter-spacing:-0.01em;margin-right:8px;}
 .live-pill{font-size:11px;background:#f0faf5;color:#0F6E56;padding:2px 8px;border-radius:20px;border:0.5px solid #9FE1CB;}
-.nav-right{display:flex;gap:6px;align-items:center;}
-.nav-btn{font-size:12px;color:#555;background:#f5f5f7;border:0.5px solid #e0e0e0;padding:5px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;}
-.nav-btn:hover{background:#eee;}
-.nav-btn.primary{color:#0F6E56;background:#f0faf5;border-color:#9FE1CB;}
-.nav-btn.primary:hover{background:#E1F5EE;}
-.messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;}
+
+.messages{flex:1;overflow-y:auto;padding:24px;}
 .messages-inner{max-width:780px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
 .date-sep{font-size:11px;color:#999;text-align:center;padding:4px 0;}
+
 .agent-card{background:white;border:0.5px solid #e8e8e8;border-radius:12px;padding:20px 24px;font-size:13px;color:#1a1a1a;line-height:1.7;}
+
 .user-msg{display:flex;justify-content:flex-end;}
-.user-bubble{background:#1D9E75;color:white;border-radius:12px;padding:12px 16px;max-width:70%;font-size:13px;line-height:1.6;}
+.user-bubble{background:#1D9E75;color:white;border-radius:12px;padding:12px 18px;max-width:72%;font-size:13px;line-height:1.6;font-weight:400;}
+
 .typing-card{background:white;border:0.5px solid #e8e8e8;border-radius:12px;padding:16px 20px;display:flex;gap:5px;align-items:center;width:fit-content;}
 .dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:bounce 1.2s infinite;}
 .dot:nth-child(2){animation-delay:0.2s;}
 .dot:nth-child(3){animation-delay:0.4s;}
 @keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
-.section-header{font-size:11px;font-weight:600;color:#1D9E75;letter-spacing:0.06em;text-transform:uppercase;margin:14px 0 5px;}
-.section-header:first-child{margin-top:0;}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;}
-.stat-card{background:#f5f5f7;border-radius:8px;padding:12px;}
-.stat-label{font-size:11px;color:#888;margin-bottom:4px;}
-.stat-value{font-size:20px;font-weight:500;color:#1a1a1a;}
-.stat-value.green{color:#1D9E75;}
-.stat-value.amber{color:#BA7517;}
-.batch-list{display:flex;flex-direction:column;gap:0;margin:8px 0;}
-.batch-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #f0f0f0;}
-.batch-row:last-child{border-bottom:none;}
-.batch-name{font-size:13px;font-weight:500;color:#1a1a1a;}
-.batch-date{font-size:12px;color:#888;margin-left:8px;}
-.status-pill{font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+
+.section-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.07em;text-transform:uppercase;margin:16px 0 10px;}
+.section-label:first-child{margin-top:0;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px;}
+.stat-box{background:#f5f5f7;border-radius:10px;padding:14px;}
+.stat-box.amber{background:#fffbf0;}
+.stat-label{font-size:11px;color:#888;margin-bottom:6px;}
+.stat-num{font-size:22px;font-weight:500;color:#1a1a1a;}
+.stat-num.green{color:#1D9E75;}
+.stat-num.amber{color:#BA7517;}
+
+.batch-list{border-top:0.5px solid #f0f0f0;margin:8px 0;}
+.batch-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid #f0f0f0;}
+.batch-left{display:flex;align-items:baseline;gap:8px;}
+.batch-name{font-size:13px;font-weight:600;color:#1a1a1a;}
+.batch-date{font-size:12px;color:#aaa;}
+.status-pill{font-size:11px;padding:4px 11px;border-radius:20px;white-space:nowrap;}
 .pill-green{background:#f0faf5;color:#0F6E56;border:0.5px solid #9FE1CB;}
 .pill-amber{background:#fff8f0;color:#854F0B;border:0.5px solid #FAC775;}
-.pill-grey{background:#f5f5f7;color:#555;border:0.5px solid #e0e0e0;}
+.pill-grey{background:#f5f5f7;color:#555;border:0.5px solid #ddd;}
 .pill-red{background:#fff0f0;color:#991b1b;border:0.5px solid #fca5a5;}
-.email-section{margin:12px 0;}
-.email-summary{font-size:13px;color:#555;margin-bottom:10px;}
+
+.prose{font-size:13px;color:#1a1a1a;line-height:1.75;margin:4px 0;}
+.prose b{font-weight:500;}
+.bullet-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0;font-size:13px;color:#1a1a1a;line-height:1.6;}
+.bullet-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:7px;}
+
+.urgent-box{background:#fffbf0;border:0.5px solid #FAC775;border-radius:8px;padding:10px 14px;margin:6px 0;font-size:13px;color:#854F0B;line-height:1.6;}
+
+.email-section{margin-top:14px;}
+.email-count{font-size:13px;color:#555;margin-bottom:10px;}
 .email-pills{display:flex;flex-wrap:wrap;gap:8px;}
-.email-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#0F6E56;background:#f0faf5;border:0.5px solid #9FE1CB;padding:6px 12px;border-radius:6px;text-decoration:none;cursor:pointer;}
+.email-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#0F6E56;background:#f0faf5;border:0.5px solid #9FE1CB;padding:7px 13px;border-radius:7px;text-decoration:none;cursor:pointer;}
 .email-pill:hover{background:#E1F5EE;}
 .email-pill svg{width:12px;height:12px;flex-shrink:0;}
-.urgent-item{background:#fff8f0;border:0.5px solid #FAC775;border-radius:8px;padding:10px 14px;margin:6px 0;font-size:13px;color:#854F0B;}
-.action-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:#1a1a1a;}
-.action-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:5px;}
-.bottom{background:white;border-top:0.5px solid #e8e8e8;padding:12px 24px 16px;flex-shrink:0;}
+.more-pill{font-size:12px;color:#555;background:#f5f5f7;border:0.5px solid #ddd;padding:7px 13px;border-radius:7px;}
+
+.bottom{background:white;border-top:0.5px solid #e8e8e8;padding:12px 24px 18px;flex-shrink:0;}
 .bottom-inner{max-width:780px;margin:0 auto;}
 .quick-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-.quick-pill{font-size:11px;color:#555;background:white;border:0.5px solid #e0e0e0;padding:4px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;}
+.quick-pill{font-size:11px;color:#555;background:white;border:0.5px solid #ddd;padding:5px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;}
 .quick-pill:hover{background:#f5f5f7;}
 .input-row{display:flex;gap:10px;align-items:center;}
 .input-row input{flex:1;border:0.5px solid #e0e0e0;border-radius:8px;padding:10px 16px;font-size:13px;background:#f5f5f7;outline:none;font-family:inherit;color:#1a1a1a;}
 .input-row input:focus{border-color:#1D9E75;background:white;}
-.send-btn{width:36px;height:36px;border-radius:8px;background:#1D9E75;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.send-btn{width:38px;height:38px;border-radius:8px;background:#1D9E75;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .send-btn:hover{background:#0F6E56;}
 .send-btn svg{width:14px;height:14px;fill:white;}
+
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#d0d8e0;border-radius:4px;}
@@ -75,26 +87,20 @@ nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:fl
 <body>
 
 <nav>
-  <div class="nav-left">
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-    </div>
-    <span class="nav-title">LDP Supervisor</span>
-    <span class="live-pill">Live</span>
+  <div class="nav-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4l3 3"/>
+    </svg>
   </div>
-  <div class="nav-right">
-    <button class="nav-btn" onclick="runAgent('agent1')">Agent 1</button>
-    <button class="nav-btn" onclick="runAgent('agent2_pre')">Agent 2 Pre</button>
-    <button class="nav-btn" onclick="runAgent('agent2_post')">Agent 2 Post</button>
-    <button class="nav-btn" onclick="runAgent('agent3')">Agent 3</button>
-    <button class="nav-btn primary" onclick="loadTodaysActions()">Today's Actions</button>
-  </div>
+  <span class="nav-title">Learning Program Manager Agent</span>
+  <span class="live-pill">Live</span>
 </nav>
 
 <div class="messages" id="messages">
-  <div class="messages-inner" id="messagesInner">
+  <div class="messages-inner" id="inner">
     <div class="date-sep" id="dateSep"></div>
-    <div class="agent-card" id="welcomeCard">
+    <div class="agent-card">
       Hello. I have loaded your LDP programme data. You have <b>4 active batches</b> and <b>165 in-scope employees</b>. Batch 04 workshop is in 14 days. How can I help you today?
     </div>
   </div>
@@ -107,10 +113,12 @@ nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:fl
       <button class="quick-pill" onclick="sendQuick('Who needs VL nudges?')">VL nudges needed</button>
       <button class="quick-pill" onclick="sendQuick('What is the Batch 04 status?')">Batch 04 status</button>
       <button class="quick-pill" onclick="sendQuick('Any special cases I should know about?')">Special cases</button>
-      <button class="quick-pill" onclick="loadTodaysActions()">Today\'s actions</button>
+      <button class="quick-pill" onclick="sendQuick('What are today\'s priority actions?')">Today\'s actions</button>
     </div>
     <div class="input-row">
-      <input type="text" id="userInput" placeholder="Ask about your LDP programme..." onkeydown="if(event.key==='Enter')sendMessage()"/>
+      <input type="text" id="userInput"
+        placeholder="Ask about your LDP programme..."
+        onkeydown="if(event.key==='Enter')sendMessage()"/>
       <button class="send-btn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
       </button>
@@ -119,187 +127,170 @@ nav{background:white;border-bottom:0.5px solid #e8e8e8;padding:0 24px;display:fl
 </div>
 
 <script>
-const conversationHistory = [];
+const history = [];
 
-function getToday() {
-  return new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+document.getElementById('dateSep').textContent =
+  new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+function esc(t){
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-document.getElementById('dateSep').textContent = getToday();
-
-function addUserMsg(text) {
-  const inner = document.getElementById('messagesInner');
-  const div = document.createElement('div');
-  div.className = 'user-msg';
-  div.innerHTML = `<div class="user-bubble">${escHtml(text)}</div>`;
-  inner.appendChild(div);
-  scrollBottom();
-}
-
-function addAgentCard(html) {
-  const inner = document.getElementById('messagesInner');
-  const div = document.createElement('div');
-  div.className = 'agent-card';
-  div.innerHTML = html;
-  inner.appendChild(div);
-  scrollBottom();
-  return div;
-}
-
-function showTyping() {
-  const inner = document.getElementById('messagesInner');
-  const div = document.createElement('div');
-  div.id = 'typing';
-  div.className = 'typing-card';
-  div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  inner.appendChild(div);
-  scrollBottom();
-}
-
-function removeTyping() {
-  const t = document.getElementById('typing');
-  if(t) t.remove();
-}
-
-function scrollBottom() {
+function scrollBot(){
   const m = document.getElementById('messages');
   m.scrollTop = m.scrollHeight;
 }
 
-function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function addUserMsg(text){
+  const d = document.createElement('div');
+  d.className = 'user-msg';
+  d.innerHTML = `<div class="user-bubble">${esc(text)}</div>`;
+  document.getElementById('inner').appendChild(d);
+  scrollBot();
 }
 
-function formatMessage(text) {
-  // Strip email blocks — collect Gmail buttons
-  let emailButtons = '';
-  let emailCount = 0;
-  const emailRegex = /---EMAIL---([\s\S]+?)---END---/g;
-  let match;
-  while((match = emailRegex.exec(text)) !== null) {
-    const block = match[1];
-    const toMatch = block.match(/TO:\s*(.+)/i);
-    const subMatch = block.match(/SUBJECT:\s*(.+)/i);
-    const bodyMatch = block.match(/BODY:\s*([\s\S]+)/i);
-    if(toMatch && subMatch && bodyMatch) {
-      const to = toMatch[1].trim();
-      const subject = subMatch[1].trim();
-      const body = bodyMatch[1].replace(/---END---/g,'').trim();
+function addCard(html){
+  const d = document.createElement('div');
+  d.className = 'agent-card';
+  d.innerHTML = html;
+  document.getElementById('inner').appendChild(d);
+  scrollBot();
+  return d;
+}
+
+function showTyping(){
+  const d = document.createElement('div');
+  d.id = 'typing';
+  d.className = 'typing-card';
+  d.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  document.getElementById('inner').appendChild(d);
+  scrollBot();
+}
+
+function removeTyping(){
+  const t = document.getElementById('typing');
+  if(t) t.remove();
+}
+
+function formatMessage(raw){
+  let text = raw;
+
+  // Extract email blocks
+  let emailButtons = [];
+  const emailRx = /---EMAIL---([\s\S]+?)---END---/g;
+  let em;
+  while((em = emailRx.exec(raw)) !== null){
+    const b = em[1];
+    const toM = b.match(/TO:\s*(.+)/i);
+    const subM = b.match(/SUBJECT:\s*(.+)/i);
+    const bodyM = b.match(/BODY:\s*([\s\S]+)/i);
+    if(toM && subM && bodyM){
+      const to = toM[1].trim();
+      const sub = subM[1].trim();
+      const body = bodyM[1].replace(/---END---/g,'').trim();
       const url = 'https://mail.google.com/mail/?view=cm&fs=1'
         +'&to='+encodeURIComponent(to)
-        +'&su='+encodeURIComponent(subject)
+        +'&su='+encodeURIComponent(sub)
         +'&body='+encodeURIComponent(body);
-      emailButtons += `<a href="${url}" target="_blank" class="email-pill">
+      emailButtons.push({name: to, url: url});
+    }
+    text = text.replace(em[0], '');
+  }
+
+  // Clean markdown
+  text = text.replace(/^\|.*\|$/gm,'');
+  text = text.replace(/^\|[-|:\s]+\|$/gm,'');
+  text = text.replace(/^-{3,}$/gm,'');
+  text = text.replace(/^#{4,}\s*/gm,'');
+  text = text.replace(/^#{3}\s*/gm,'');
+  text = text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+  text = text.replace(/\*(.*?)\*/g,'<i>$1</i>');
+
+  // Convert ## to section labels
+  text = text.replace(/^##\s+(.+)$/gm,
+    '\n<div class="section-label">$1</div>\n');
+
+  // Bullet points
+  text = text.replace(/^[\-\*•]\s+(.+)$/gm,
+    '<div class="bullet-item"><div class="bullet-dot"></div><div>$1</div></div>');
+
+  // Numbered lists
+  text = text.replace(/^\d+\.\s+(.+)$/gm,
+    '<div class="bullet-item"><div class="bullet-dot"></div><div>$1</div></div>');
+
+  // Paragraphs
+  const lines = text.split('\n');
+  let html = '';
+  let prevBlank = false;
+  for(let line of lines){
+    const trimmed = line.trim();
+    if(!trimmed){
+      if(!prevBlank) html += '<br>';
+      prevBlank = true;
+      continue;
+    }
+    prevBlank = false;
+    if(trimmed.startsWith('<div') || trimmed.startsWith('<br')){
+      html += trimmed;
+    } else {
+      html += `<div class="prose">${trimmed}</div>`;
+    }
+  }
+
+  // Clean up excess breaks
+  html = html.replace(/(<br>){3,}/g,'<br><br>');
+  html = html.replace(/^<br>/,'');
+
+  // Email section
+  if(emailButtons.length > 0){
+    const visible = emailButtons.slice(0,4);
+    const extra = emailButtons.length - 4;
+    let pills = visible.map(e =>
+      `<a href="${e.url}" target="_blank" class="email-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2">
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
-        </svg>${escHtml(to)}</a>`;
-      emailCount++;
-    }
-    text = text.replace(match[0], '');
-  }
-
-  // Strip markdown tables
-  text = text.replace(/^\|.*\|$/gm, '');
-  text = text.replace(/^\|[-|:\s]+\|$/gm, '');
-  // Strip --- dividers
-  text = text.replace(/^-{3,}$/gm, '');
-  // Strip #### ### markers
-  text = text.replace(/^#{3,}\s*/gm, '');
-  // Convert ## to section header
-  text = text.replace(/^##\s+(.+)$/gm,
-    '<div class="section-header">$1</div>');
-  // Convert ** bold
-  text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-  // Convert * italic
-  text = text.replace(/\*(.*?)\*/g, '<i>$1</i>');
-  // Bullet points — compact
-  text = text.replace(/^[\-\*]\s+(.+)$/gm,
-    '<div class="action-item"><div class="action-dot"></div><div>$1</div></div>');
-  // Line breaks
-  text = text.replace(/\n\n+/g, '<br>');
-  text = text.replace(/\n/g, '<br>');
-  // Max 2 consecutive br
-  text = text.replace(/(<br\s*\/?>\s*){3,}/g, '<br><br>');
-
-  let result = text.trim();
-
-  if(emailCount > 0) {
-    result += `<div class="email-section">
-      <div class="email-summary">${emailCount} email${emailCount>1?'s':''} ready — click to open in Gmail</div>
-      <div class="email-pills">${emailButtons}</div>
+        </svg>${esc(e.name)}</a>`
+    ).join('');
+    if(extra > 0) pills += `<span class="more-pill">+${extra} more</span>`;
+    html += `<div class="email-section">
+      <div class="email-count">${emailButtons.length} email${emailButtons.length>1?'s':''} ready — click to open in Gmail</div>
+      <div class="email-pills">${pills}</div>
     </div>`;
   }
 
-  return result;
+  return html;
 }
 
-async function sendMessage() {
+async function sendMessage(){
   const input = document.getElementById('userInput');
   const msg = input.value.trim();
   if(!msg) return;
   input.value = '';
-
   addUserMsg(msg);
-  conversationHistory.push({role:'user', content:msg});
+  history.push({role:'user', content: msg});
   showTyping();
-
-  try {
-    const res = await fetch('/chat', {
+  try{
+    const res = await fetch('/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        message: msg,
-        history: conversationHistory
-      })
+      body: JSON.stringify({message: msg, history: history})
     });
     const data = await res.json();
     removeTyping();
     const reply = data.reply || 'Sorry, something went wrong.';
-    conversationHistory.push({role:'assistant', content:reply});
-    addAgentCard(formatMessage(reply));
-  } catch(e) {
+    history.push({role:'assistant', content: reply});
+    addCard(formatMessage(reply));
+  } catch(e){
     removeTyping();
-    addAgentCard('Sorry, something went wrong. Please try again.');
+    addCard('Sorry, something went wrong. Please try again.');
   }
 }
 
-function sendQuick(text) {
+function sendQuick(text){
   document.getElementById('userInput').value = text;
   sendMessage();
 }
-
-async function runAgent(agentName) {
-  const card = addAgentCard(
-    `<div style="color:#888;font-size:13px;">Running ${agentName.replace('_',' ')}...</div>`
-  );
-  try {
-    const res = await fetch('/run_agent', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({agent: agentName})
-    });
-    const data = await res.json();
-    card.innerHTML = formatMessage(data.output || data.reply || 'Agent completed.');
-  } catch(e) {
-    card.innerHTML = 'Agent run failed. Please try again.';
-  }
-}
-
-async function loadTodaysActions() {
-  showTyping();
-  try {
-    const res = await fetch('/todays_actions');
-    const data = await res.json();
-    removeTyping();
-    addAgentCard(formatMessage(data.actions || data.reply || 'No urgent actions today.'));
-  } catch(e) {
-    removeTyping();
-    addAgentCard('Could not load today\'s actions.');
-  }
-}
-
-loadTodaysActions();
 </script>
 </body>
 </html>
