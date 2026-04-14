@@ -68,6 +68,9 @@ def get_latest_vl_report(fallback_sheet_id=FALLBACK_VL_SHEET_ID):
             return None, None
         latest = files[0]
         print(f"Latest VL report: {latest['name']} (modified: {latest['modifiedTime'][:10]})")
+        print(f"  Sheet ID: {latest['id']}")
+        print(f"  Expected: {FALLBACK_VL_SHEET_ID}")
+        print(f"  Match:    {latest['id'] == FALLBACK_VL_SHEET_ID}")
         return latest["id"], latest["name"]
     except Exception as e:
         err = str(e)
@@ -86,6 +89,18 @@ def get_latest_vl_report(fallback_sheet_id=FALLBACK_VL_SHEET_ID):
         return (sheet_id, "VL_Report (manual)") if sheet_id else (None, None)
 
 # ── TOOL 2: Read VL report ────────────────────────────────────
+def _detect_header_row(rows):
+    """Return the index of the header row by looking for 'Emp ID' in column 0."""
+    keywords = ("Virtual Learning", "Workshop", "Report", "VL ")
+    for i, row in enumerate(rows[:4]):
+        cell = row[0].strip() if row else ""
+        if cell == "Emp ID":
+            return i
+        if any(k in cell for k in keywords):
+            continue  # metadata row — keep scanning
+    # fallback: return first row whose first cell is non-empty and not metadata
+    return 2
+
 def read_vl_report(sheet_id):
     gc, _ = connect()
     wb = gc.open_by_key(sheet_id)
@@ -95,16 +110,17 @@ def read_vl_report(sheet_id):
         if "Batch" not in batch_name:
             continue
         rows = ws.get_all_values()
-        if len(rows) < 3:
+        if len(rows) < 2:
             all_data[batch_name] = []
             continue
-        headers = rows[2]
+        header_idx = _detect_header_row(rows)
+        headers = rows[header_idx]
         data = []
-        for row in rows[3:]:
+        for row in rows[header_idx + 1:]:
             if any(cell.strip() for cell in row):
                 data.append(dict(zip(headers, row)))
         all_data[batch_name] = data
-        print(f"  {batch_name}: {len(data)} employees")
+        print(f"  {batch_name}: {len(data)} employees (headers at row {header_idx})")
     return all_data
 
 # ── TOOL 3: Read LDP Tracker ──────────────────────────────────
