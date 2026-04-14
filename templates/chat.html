@@ -348,6 +348,11 @@ function formatMessage(raw){
   return html;
 }
 
+function isStatusQuery(msg) {
+  const t = msg.toLowerCase();
+  return t.includes('status') || t.includes('overview') || t.includes('dashboard') || t.includes('summary');
+}
+
 function renderDashboard(pd, reply) {
   let html = '';
 
@@ -407,7 +412,7 @@ async function sendMessage(){
     removeTyping();
     const reply = data.reply || 'Sorry, something went wrong.';
     history.push({role:'assistant', content: reply});
-    if(data.programme_data) {
+    if(data.programme_data && isStatusQuery(msg)) {
       renderDashboard(data.programme_data, reply);
     } else {
       addCard(formatMessage(reply));
