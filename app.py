@@ -374,9 +374,8 @@ PROGRAMME DATA:
 {text_summary}
 
 CURRENT PRIORITIES (as of today):
-1. URGENT: Send joining emails to all 26 Batch 04 participants — workshop is 28-29 May 2026 at Main Training Centre, Dubai, 9AM-5PM, Business Casual dress code.
+1. Nominations are open until 7 May 2026. Follow up with HRBPs who have not yet responded.
 2. Follow up on VL completion for Batch 01/02/03 non-completers.
-3. NOMINATIONS ARE CLOSED — do not flag missing HRBP nominations as an action item. All 26 nominees are confirmed.
 
 RESPONSE RULES — FOLLOW EXACTLY:
 1. Be concise and direct. No padding or filler phrases.
@@ -529,6 +528,20 @@ def todays_actions():
         })
     except Exception as e:
         return jsonify({"actions": f"Error: {str(e)}"}), 500
+
+
+@app.route("/debug_tracker")
+def debug_tracker():
+    try:
+        tracker = read_tracker()
+        headers = list(tracker[0].keys()) if tracker else []
+        cert_rows = [
+            {"name": r.get("Employee Name",""), "batch": r.get("Batch",""), "cert": r.get("Certificate Issued Date","")}
+            for r in tracker if r.get("Certificate Issued Date","").strip() not in ("", "—")
+        ]
+        return jsonify({"headers": headers, "cert_count": len(cert_rows), "cert_rows": cert_rows})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.after_request
