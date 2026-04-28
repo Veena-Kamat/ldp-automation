@@ -9,8 +9,8 @@ client = anthropic.Anthropic(
     api_key=os.getenv("ANTHROPIC_API_KEY")
 )
 
-BATCH_DATE = "28-29 April 2026"
-NOMINATION_DEADLINE = "7 April 2026"
+BATCH_DATE = "28-29 May 2026"
+NOMINATION_DEADLINE = "7 May 2026"
 
 def get_tbd_employees(rows):
     tbd = [r for r in rows if r.get('Batch','').strip() == 'TBD']

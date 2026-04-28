@@ -18,10 +18,10 @@ NOMINATIONS_SHEET_ID = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
 CREDENTIALS_FILE = "/Users/veenakamat/ldp-agent/google_credentials.json"
 BATCH_NAME       = "Batch-04-2026"
 NEXT_BATCH_NAME  = "Batch-05-2026"
-BATCH_DATE       = "28-29 April 2026"
-NOMINATION_DEADLINE = "7 April 2026"
+BATCH_DATE       = "28-29 May 2026"
+NOMINATION_DEADLINE = "7 May 2026"
 WORKSHOP_LOCATION   = "Main Training Centre, Dubai"
-CALENDAR_LINK       = "https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop"
+CALENDAR_LINK       = "https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260528T090000/20260529T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop"
 TODAY = date.today().strftime("%d-%b-%Y")
 
 SECTION_LABELS = [
@@ -267,7 +267,7 @@ Then continue warmly with:
 - Programme details: {BATCH_DATE}, {WORKSHOP_LOCATION}, 9AM-5PM both days
 - Mention they will also complete virtual learning modules after the workshop
 - Include this calendar link so they can save the event: {CALENDAR_LINK}
-- Ask them to reply to confirm attendance by 14 April 2026
+- Ask them to reply to confirm attendance by 14 May 2026
 - Sign off as: LDP Programme Team
 
 {PLAIN_TEXT_NOTE}

@@ -12,7 +12,7 @@ client = anthropic.Anthropic(
 )
 
 NOMINATIONS_SHEET_ID = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
-BATCH_DATE = "28-29 April 2026"
+BATCH_DATE = "28-29 May 2026"
 WORKSHOP_LOCATION = "Main Training Centre, Dubai"
 WORKSHOP_TIME = "9:00 AM - 5:00 PM"
 DRESS_CODE = "Business Casual"
@@ -62,7 +62,7 @@ Then continue with:
 - Programme details: {BATCH_DATE}, {WORKSHOP_LOCATION}, {WORKSHOP_TIME} both days
 - Dress Code: {DRESS_CODE}
 - Mention they will also complete virtual learning modules after the workshop
-- Include this calendar link: https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop
+- Include this calendar link: https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260528T090000/20260529T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop
 - Ask them to confirm attendance by replying
 - Sign off as: LDP Programme Team
 

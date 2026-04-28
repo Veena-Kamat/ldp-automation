@@ -26,11 +26,11 @@ SECTION_LABELS = [
 
 # Key programme dates / deadlines for TODAY context
 PROGRAMME_DEADLINES = {
-    "batch04_nomination_deadline": date(2026, 4, 7),
-    "batch04_workshop_day1":       date(2026, 4, 28),
-    "batch04_workshop_day2":       date(2026, 4, 29),
-    "batch04_vl_deadline":         date(2026, 5, 27),  # ~4 weeks after workshop
-    "batch04_vl_second_nudge":     date(2026, 5, 20),  # 1 week before VL deadline
+    "batch04_nomination_deadline": date(2026, 5, 7),
+    "batch04_workshop_day1":       date(2026, 5, 28),
+    "batch04_workshop_day2":       date(2026, 5, 29),
+    "batch04_vl_deadline":         date(2026, 6, 25),  # ~4 weeks after workshop
+    "batch04_vl_second_nudge":     date(2026, 6, 18),  # 1 week before VL deadline
 }
 
 ALL_HRBPS = [
@@ -384,7 +384,7 @@ BATCH 04 NOMINATIONS:
   Responded:   {len(hrbp_responses)}
   Not responded: {', '.join(not_responded) if not_responded else 'All responded'}
   Total nominees: {len(all_nominees)}
-  Deadline: 7 April 2026
+  Deadline: 7 May 2026
 """
     for hrbp, data in hrbp_responses.items():
         nominees_with_fn = [

@@ -12,14 +12,14 @@ client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 LDP_TRACKER_ID = "1z0-TFgYUmftZglGwGlaDbkgEM3k8VfaIOm4Rl8RmFow"
 BATCH_NAME     = "Batch-04-2026"
-WORKSHOP_D1    = "28 April 2026 (Tuesday)"
-WORKSHOP_D2    = "29 April 2026 (Wednesday)"
+WORKSHOP_D1    = "28 May 2026 (Thursday)"
+WORKSHOP_D2    = "29 May 2026 (Friday)"
 TIME           = "9:00 AM — 5:00 PM"
 LOCATION       = "Main Training Centre, Dubai"
 FLOOR          = "3rd Floor, Training Room B"
 PARKING        = "Visitor parking available in basement"
 DRESS_CODE     = "Business Casual"
-CALENDAR_LINK  = "https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260428T090000/20260429T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop"
+CALENDAR_LINK  = "https://www.google.com/calendar/render?action=TEMPLATE&text=LDP+Batch+04+Workshop&dates=20260528T090000/20260529T170000&location=Main+Training+Centre+Dubai&details=Leadership+Development+Programme+Workshop"
 TODAY          = date.today().strftime("%d-%b-%Y")
 
 SECTION_LABELS = [

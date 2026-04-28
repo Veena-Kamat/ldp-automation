@@ -142,7 +142,7 @@ def build_programme_data(tracker, nominations, email_lookup=None, vl_lookup=None
         "Batch-01-2026": {"label": "Batch 01", "date": "Jan 2026", "workshop": "27-28 Jan 2026"},
         "Batch-02-2026": {"label": "Batch 02", "date": "Feb 2026", "workshop": "24-25 Feb 2026"},
         "Batch-03-2026": {"label": "Batch 03", "date": "Mar 2026", "workshop": "31 Mar-1 Apr 2026"},
-        "Batch-04-2026": {"label": "Batch 04", "date": "Apr 2026", "workshop": "28-29 Apr 2026"},
+        "Batch-04-2026": {"label": "Batch 04", "date": "May 2026", "workshop": "28-29 May 2026"},
     }
 
     batches = {}
@@ -257,7 +257,7 @@ def build_programme_data(tracker, nominations, email_lookup=None, vl_lookup=None
                 desc = f"{b['attended_both']} attended · workshop done"
                 color = "amber"
             else:
-                days_to = (date(2026, 4, 28) - today).days
+                days_to = (date(2026, 5, 28) - today).days
                 if days_to > 0:
                     desc = f"{b['nominated']} nominated · workshop in {days_to} days"
                 else:
@@ -322,13 +322,13 @@ VL not started: {', '.join(batches['Batch-02-2026']['vl_not_started_names']) or 
 
 Batch-03-2026: {batches['Batch-03-2026']['total']} employees, {batches['Batch-03-2026']['attended_both']} attended both days, {batches['Batch-03-2026']['vl_in_progress']} in progress, {batches['Batch-03-2026']['vl_not_started']} not started
 
-Batch-04-2026: {batches['Batch-04-2026']['total']} employees nominated, workshop 28-29 April 2026 (NOT YET HAPPENED)
+Batch-04-2026: {batches['Batch-04-2026']['total']} employees nominated, workshop 28-29 May 2026 (NOT YET HAPPENED)
 DO NOT show attendance data for Batch 04 — workshop has not occurred yet
 
 NOMINATIONS (Batch 04):
 - {len(responded_hrbps)} of {len(all_hrbps)} HRBPs responded
 - {total_nominees} total nominees
-- Deadline: 7 April 2026
+- Deadline: 7 May 2026
 - Not responded: {', '.join(not_responded) if not_responded else 'all responded'}
 
 SPECIAL CASES:
@@ -374,7 +374,7 @@ PROGRAMME DATA:
 {text_summary}
 
 CURRENT PRIORITIES (as of today):
-1. URGENT: Send joining emails to all 26 Batch 04 participants — workshop is 28-29 April 2026 at Main Training Centre, Dubai, 9AM-5PM, Business Casual dress code.
+1. URGENT: Send joining emails to all 26 Batch 04 participants — workshop is 28-29 May 2026 at Main Training Centre, Dubai, 9AM-5PM, Business Casual dress code.
 2. Follow up on VL completion for Batch 01/02/03 non-completers.
 3. NOMINATIONS ARE CLOSED — do not flag missing HRBP nominations as an action item. All 26 nominees are confirmed.
 
@@ -450,7 +450,7 @@ def batch4_emails():
                 "You have been selected for the Leadership Development Programme 2026. "
                 "This is a fantastic opportunity and a recognition of your potential and leadership capability.\n\n"
                 "Here are your programme details:\n\n"
-                "Workshop Dates: 28-29 April 2026\n"
+                "Workshop Dates: 28-29 May 2026\n"
                 "Location: Main Training Centre, Dubai\n"
                 "Time: 9:00 AM - 5:00 PM (both days)\n"
                 "Dress Code: Business Casual\n\n"
@@ -458,7 +458,7 @@ def batch4_emails():
                 "to reinforce and apply your learning.\n\n"
                 "Add the dates to your calendar: https://www.google.com/calendar/render"
                 "?action=TEMPLATE&text=LDP+Batch+04+Workshop"
-                "&dates=20260428T090000/20260429T170000"
+                "&dates=20260528T090000/20260529T170000"
                 "&location=Main+Training+Centre+Dubai"
                 "&details=Leadership+Development+Programme+Workshop\n\n"
                 "Please confirm your attendance by replying to this email.\n\n"

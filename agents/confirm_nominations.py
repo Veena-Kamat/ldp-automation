@@ -15,7 +15,7 @@ NOMINATIONS_SHEET_ID = "1Bc-eNUYt15SiDBUccajt0tlgeuCXOKkihb7Zb3UfKiM"
 
 # Hardcoded for demo
 HRBP_NAME = "Meghna Iqbal"
-BATCH_DATE = "28-29 April 2026"
+BATCH_DATE = "28-29 May 2026"
 WORKSHOP_LOCATION = "Main Training Centre, Dubai"
 
 def read_nominations():

@@ -22,12 +22,12 @@ def generate_form_content():
     print("="*60)
     
     print("\n FORM TITLE:")
-    print("LDP Batch 04 Nominations — 28-29 April 2026")
+    print("LDP Batch 04 Nominations — 28-29 May 2026")
     
     print("\n FORM DESCRIPTION:")
     print("""Please select the employees you wish to nominate 
-for LDP Batch 04 (28-29 April 2026). 
-Nomination deadline: 7 April 2026.
+for LDP Batch 04 (28-29 May 2026). 
+Nomination deadline: 7 May 2026.
 Only select employees from your business unit.""")
     
     print("\n QUESTION 1 — Dropdown (Required)")

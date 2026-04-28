@@ -122,8 +122,28 @@ def update_tracker():
             else:
                 updated_names.append(emp_name)
 
-    print(f"\nApplying {len(batch_updates)} updates in bulk...")
-    ws.batch_update(batch_updates)
+    # Second pass: set TBD for everyone not in Batch-01/02/03 and not a nominee
+    tbd_names = []
+    tbd_updates = []
+    for row_idx, row in enumerate(data_rows):
+        emp_name = row[name_col].strip() if name_col >= 0 and len(row) > name_col else ""
+        if not emp_name or emp_name in nominees:
+            continue
+        current_batch = row[batch_col].strip() if batch_col >= 0 and len(row) > batch_col else ""
+        if current_batch.startswith("Batch-01") or \
+           current_batch.startswith("Batch-02") or \
+           current_batch.startswith("Batch-03"):
+            continue
+        sheet_row = row_idx + 3
+        tbd_updates.append({
+            "range": f"{col_letter(batch_col)}{sheet_row}",
+            "values": [["TBD"]]
+        })
+        tbd_names.append(emp_name)
+
+    all_updates = batch_updates + tbd_updates
+    print(f"\nApplying {len(all_updates)} updates in bulk ({len(batch_updates)} nominations, {len(tbd_updates)} TBD)...")
+    ws.batch_update(all_updates)
     print("Done!")
 
     print("\n" + "="*60)
@@ -135,5 +155,8 @@ def update_tracker():
     print(f"\nDeferred to Batch-05-2026: {len(deferred_names)}")
     for n in deferred_names:
         print(f"  ⏭  {n}")
+    print(f"\nSet to TBD: {len(tbd_names)}")
+    for n in tbd_names:
+        print(f"  —  {n}")
 
 update_tracker()
